@@ -7,8 +7,10 @@ using UnityEngine.TestTools;
 public class VelocityTests
 {
    [Test]
-   public void JumpingVelocityTest() {
-      Assert.AreEqual(CharacterControl.GetJunmpingVelocity(10f), new Vector2(0f, 10f));
+   public void JumpingGravityTest() {
+      Assert.AreEqual(
+         CharacterControl.GetGravityVelocity(2f, 0.1f), 
+         new Vector3(0f, Physics.gravity.y / 10f, 0f));
    }
 
    [Test]
