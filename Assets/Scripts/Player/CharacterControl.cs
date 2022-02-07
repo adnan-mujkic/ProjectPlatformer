@@ -35,7 +35,7 @@ public class CharacterControl : MonoBehaviour
       spriteRenderer = GetComponent<SpriteRenderer>();
       facingRight = true;
       player = FindObjectOfType<Player>();
-      //SprintEnabled = true;
+      SprintEnabled = true;
       //maxJumps = 2;
    }
    // Update is called once per frame
@@ -103,7 +103,9 @@ public class CharacterControl : MonoBehaviour
    }
 
    public static Vector3 GetGravityVelocity(float multiplier, float deltaTime) {
-      return Vector3.up * (Physics.gravity.y * (multiplier - 1) * deltaTime);
+      var fallingVector = Vector3.up * (Physics.gravity.y * (multiplier - 1) * deltaTime);
+      Debug.Log($"Falling vector {fallingVector}");
+      return fallingVector;
    }
    public static Vector2 GetMovementVelocity(float force, float yVelocity) {
       return new Vector2(force, yVelocity);
