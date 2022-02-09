@@ -77,14 +77,14 @@ public class CharacterControl : MonoBehaviour
             StopCoroutine(jumpingCoroutine);
          StartCoroutine(RestartJumping());
       }
-      if (rb.velocity.y != 0)
-      {
-         animator.SetBool("Jumping", true);
-      }
-      else
-      {
-         animator.SetBool("Jumping", false);
-      }
+      //if (rb.velocity.y != 0)
+      //{
+      //   animator.SetBool("Jumping", true);
+      //}
+      //else
+      //{
+      //   animator.SetBool("Jumping", false);
+      //}
       Sprinting = Input.GetKey(KeyCode.LeftShift);
       if (rb.velocity.x != 0)
       {
@@ -94,21 +94,23 @@ public class CharacterControl : MonoBehaviour
       {
          moving = false;
       }
-      animator.SetBool("Walking", moving);
+      //animator.SetBool("Walking", moving);
    }
    void Flip() {
+      player.PlayerModel.transform.localScale = new Vector3(facingRight ? -1 : 1, 1, 1);
       facingRight = !facingRight;
-      GetComponent<SpriteRenderer>().flipX = !facingRight;
-      player.Laptop.GetComponent<SpriteRenderer>().flipX = !facingRight;
    }
 
    public static Vector3 GetGravityVelocity(float multiplier, float deltaTime) {
       var fallingVector = Vector3.up * (Physics.gravity.y * (multiplier - 1) * deltaTime);
-      Debug.Log($"Falling vector {fallingVector}");
       return fallingVector;
    }
    public static Vector2 GetMovementVelocity(float force, float yVelocity) {
       return new Vector2(force, yVelocity);
+   }
+
+   public bool IsFalling() {
+      return rb.velocity.y < 0;
    }
 
    IEnumerator RestartJumping() {

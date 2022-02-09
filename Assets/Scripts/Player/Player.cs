@@ -13,6 +13,7 @@ public class Player: MonoBehaviour
    public bool Shielding;
    CharacterControl characterControl;
    public GameObject Laptop;
+   public GameObject PlayerModel;
 
    public HpBarWrapper HpBar;
    public static int Score;
@@ -61,10 +62,10 @@ public class Player: MonoBehaviour
          return;
       if(Input.GetMouseButton(1) && HasShield) {
          Shielding = true;
-         Laptop.GetComponent<Animator>().SetBool("Shielding", true);
+         //Laptop.GetComponent<Animator>().SetBool("Shielding", true);
       } else {
          Shielding = false;
-         Laptop.GetComponent<Animator>().SetBool("Shielding", false);
+         //Laptop.GetComponent<Animator>().SetBool("Shielding", false);
       }
       if(Input.GetMouseButton(0) && HasShield) {
          if(HoldingShieldFor <= 1.1f) {
