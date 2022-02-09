@@ -190,7 +190,11 @@ MonoBehaviour:
   enableAI: 1
   playerInsideAttackRange: 0
   attacking: 0
+  SpitPrefab: {fileID: 5990740368442615314, guid: a106910497fc2af4382b8cb50c43a225, type: 3}
+  SpitProjectile: {fileID: 0}
   SplatterDecalPrefab: {fileID: 8175175925971502484, guid: da80f94315e62e345b8995c954b6228a, type: 3}
+  SlimeDecalsInWorld: []
+  SlimeDecalsInWorldTimeLeft: []
 --- !u!65 &4174501378685985240
 BoxCollider:
   m_ObjectHideFlags: 0

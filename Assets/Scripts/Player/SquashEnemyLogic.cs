@@ -16,7 +16,8 @@ public class SquashEnemyLogic : MonoBehaviour
 
    private void OnTriggerEnter(Collider other) {
       var enemyClass = other.gameObject.GetComponent<EnemyBase>();
-      if(enemyClass != null && playerMovement.IsFalling())
+      if(enemyClass != null && playerMovement.IsFalling()) {
          enemyClass.TakeDamage(1);
+      }
    }
 }

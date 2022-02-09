@@ -4,18 +4,20 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 using UnityEngine.EventSystems;
+using System.Linq;
 
 public class Player: MonoBehaviour
 {
+   //HP
    public static int Lives;
    public static int HP;
+   public HpBarWrapper HpBar;
    public GameObject SucessScreen;
    public bool Shielding;
    CharacterControl characterControl;
    public GameObject Laptop;
    public GameObject PlayerModel;
 
-   public HpBarWrapper HpBar;
    public static int Score;
    public static int Keys;
    public Text ScoreText;
@@ -34,6 +36,9 @@ public class Player: MonoBehaviour
    public float ChargePercentage;
    public float HoldingShieldFor;
 
+
+   private Coroutine DamageTickCoroutine = null;
+   private Dictionary<GameObject, DamageModifier> DamageModifierList;
 
    private void Start() {
       HasShield = true;
@@ -54,6 +59,7 @@ public class Player: MonoBehaviour
          }
       }
 
+      DamageModifierList = new Dictionary<GameObject, DamageModifier>();
    }
 
    // Update is called once per frame
@@ -90,32 +96,32 @@ public class Player: MonoBehaviour
    }
 
    private void OnTriggerEnter2D(Collider2D other) {
-      if(other.tag == "Enemy") {
-         if((Shielding && characterControl.facingRight && other.transform.position.x > transform.position.x) ||
-         (Shielding && !characterControl.facingRight && other.transform.position.x < transform.position.x)) {
-            if(other.GetComponent<BoneAi>() != null && Laptop.GetComponent<LaptopController>().DamageShield()) {
-               if(other.GetComponent<BoneAi>().SkeletonFacingRight)
-                  other.GetComponent<Rigidbody2D>().velocity = new Vector2(-25, 0);
-               else
-                  other.GetComponent<Rigidbody2D>().velocity = new Vector2(25, 0);
-               other.GetComponent<BoneAi>().SkeletonOwner = false;
-            } else {
-               HP--;
-               HpBar.UpdateHp(HP);
-               Destroy(other.gameObject);
-               if(HP <= 0) {
-                  Die(false);
-               }
-            }
-         } else {
-            HP--;
-            HpBar.UpdateHp(HP);
-            Destroy(other.gameObject);
-            if(HP <= 0) {
-               Die(false);
-            }
-         }
-      }
+      //if(other.tag == "Enemy") {
+      //   if((Shielding && characterControl.facingRight && other.transform.position.x > transform.position.x) ||
+      //   (Shielding && !characterControl.facingRight && other.transform.position.x < transform.position.x)) {
+      //      if(other.GetComponent<BoneAi>() != null && Laptop.GetComponent<LaptopController>().DamageShield()) {
+      //         if(other.GetComponent<BoneAi>().SkeletonFacingRight)
+      //            other.GetComponent<Rigidbody2D>().velocity = new Vector2(-25, 0);
+      //         else
+      //            other.GetComponent<Rigidbody2D>().velocity = new Vector2(25, 0);
+      //         other.GetComponent<BoneAi>().SkeletonOwner = false;
+      //      } else {
+      //         HP--;
+      //         HpBar.UpdateHp(HP);
+      //         Destroy(other.gameObject);
+      //         if(HP <= 0) {
+      //            Die(false);
+      //         }
+      //      }
+      //   } else {
+      //      HP--;
+      //      HpBar.UpdateHp(HP);
+      //      Destroy(other.gameObject);
+      //      if(HP <= 0) {
+      //         Die(false);
+      //      }
+      //   }
+      //}
       if(other.tag == "DeathZone") {
          Die(true);
       }
@@ -156,7 +162,6 @@ public class Player: MonoBehaviour
       }
       return false;
    }
-
    public void AddKey() {
       Keys++;
       if(Keys == 2) {
@@ -165,17 +170,49 @@ public class Player: MonoBehaviour
          GetComponent<Rigidbody2D>().simulated = false;
       }
    }
-
    public void SwitchVolume(float vol) {
       Volume = vol;
       source.volume = vol;
    }
-
-
+   public void TakeDamage(int amount) {
+      HP-=amount;
+      if(HP <= 0) {
+         HP = 0;
+         Die(false);
+      }
+      HpBar.UpdateHp(HP);
+   }
+   private IEnumerator TickDamageModifier() {
+      while(DamageModifierList.Count > 0) {
+         var keys = DamageModifierList.Keys.ToList();
+         for(int i = 0; i < keys.Count; i++) {
+            var key = keys[i];
+            if(key != null) {
+               if(DamageModifierList[key].TicksLeft > 0) {
+                  DamageModifierList[key].TicksLeft--;
+                  TakeDamage(DamageModifierList[key].DamagePerSecond);
+               } else {
+                  DamageModifierList.Remove(key);
+                  i--;
+               }
+            } else {
+               DamageModifierList.Remove(key);
+               i--;
+               yield return null;
+            }
+         }
+         yield return new WaitForSeconds(1f);
+      }
+   }
+   public void StartDamageTick(DamageModifier modifier, GameObject enemy) {
+      DamageModifierList.Add(enemy, modifier);
+      if(DamageTickCoroutine == null)
+         DamageTickCoroutine = StartCoroutine(TickDamageModifier());
+   }
 }
 
-public struct DialogueMap
-{
-   public int index;
-   public bool enabled;
-}
+   public struct DialogueMap
+   {
+      public int index;
+      public bool enabled;
+   }

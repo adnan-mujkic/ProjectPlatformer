@@ -5,6 +5,8 @@ using UnityEngine;
 
 public class SlimeAi : EnemyBase
 {
+   public GameObject SpitPrefab;
+   public GameObject SpitProjectile;
    public GameObject SplatterDecalPrefab;
    public List<GameObject> SlimeDecalsInWorld;
    public List<float> SlimeDecalsInWorldTimeLeft;
@@ -14,6 +16,11 @@ public class SlimeAi : EnemyBase
       SlimeDecalsInWorld = new List<GameObject>();
       SlimeDecalsInWorldTimeLeft = new List<float>();
       StartCoroutine(CheckDecals(0.5f));
+      StartCoroutine(Spit());
+   }
+
+   internal override void FUpdate() {
+      base.FUpdate();
    }
 
    public override void StartBasicAttack() {
@@ -21,6 +28,24 @@ public class SlimeAi : EnemyBase
 
       if(playerInsideAttackRange && !attacking)
          StartCoroutine(TriggerAttack());
+   }
+
+   IEnumerator Spit() {
+      while(true) {
+         if(!playerInsideAttackRange && !attacking && InsideCamera) {
+            SpitProjectile = Instantiate(SpitPrefab, transform.position, Quaternion.identity);
+            SpitProjectile.GetComponent<ProjectileAi>().EnemyBase = this;
+            Vector3 playerFeet = new Vector3(player.transform.position.x, player.transform.position.y - 0.4f, player.transform.position.z);
+            Vector3 centerVector = (transform.position + playerFeet) / 2f;
+            SpitProjectile.transform.DOPath(new Vector3[] {
+               transform.position,
+               new Vector3(centerVector.x, centerVector.y + 1.5f, centerVector.z),
+               playerFeet
+            }, 1f);
+            yield return new WaitForSeconds(3f);
+         }
+         yield return new WaitForSeconds(0.1f);
+      }
    }
 
    IEnumerator TriggerAttack() {
@@ -55,11 +80,6 @@ public class SlimeAi : EnemyBase
             yield return new WaitForEndOfFrame();
          }
          transform.position = newPos;
-
-         var decalPos = new Vector3(newPos.x, newPos.y - 0.5f, newPos.z);
-         var decalRot = SplatterDecalPrefab.transform.rotation;
-         SlimeDecalsInWorld.Add(Instantiate(SplatterDecalPrefab, decalPos, decalRot));
-         SlimeDecalsInWorldTimeLeft.Add(4f);
       }
       
       //Cooldown

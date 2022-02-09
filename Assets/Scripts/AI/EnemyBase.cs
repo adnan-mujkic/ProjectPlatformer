@@ -10,7 +10,7 @@ public class EnemyBase: MonoBehaviour
    int HP;
    internal Player player;
    bool facingRight;
-   bool InsideCamera;
+   public bool InsideCamera;
    public bool enableAI;
    public bool playerInsideAttackRange;
    public bool attacking;
@@ -20,6 +20,15 @@ public class EnemyBase: MonoBehaviour
       Enable();
    }
    private void FixedUpdate() {
+      FUpdate();
+   }
+
+   internal virtual void Enable() {
+      player = FindObjectOfType<Player>();
+      StartCoroutine(CheckIfInsideCamera());
+   }
+
+   internal virtual void FUpdate() {
       if(!InsideCamera || !enableAI || attacking)
          return;
 
@@ -29,10 +38,6 @@ public class EnemyBase: MonoBehaviour
       float calculatedSpeed = Speed * Time.deltaTime;
       transform.position += new Vector3(
          (player.transform.position.x >= transform.position.x ? calculatedSpeed : -calculatedSpeed), 0, 0);
-   }
-   internal virtual void Enable() {
-      player = FindObjectOfType<Player>();
-      StartCoroutine(CheckIfInsideCamera());
    }
 
    public virtual void TakeDamage(int amount) {
@@ -69,5 +74,12 @@ public class EnemyBase: MonoBehaviour
          yield return new WaitForSeconds(0.1f);
       }
    }
-   
+
+   private void OnTriggerEnter(Collider other) {
+      if(other.gameObject.tag == "Player") {
+         if(other.gameObject.transform.position.y < gameObject.transform.position.y + 0.1f) {
+            other.gameObject.GetComponent<Player>().TakeDamage(1);
+         }
+      }
+   }
 }
