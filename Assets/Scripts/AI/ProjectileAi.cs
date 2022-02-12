@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using DG.Tweening;
 
 public class ProjectileAi : MonoBehaviour
 {
@@ -15,7 +16,9 @@ public class ProjectileAi : MonoBehaviour
             TickRate = TickDuration,
             TicksLeft = TickDuration,
             HealPerSecond = 0
-         }, gameObject);
+         }, Assets.Scripts.Enums.EDamageOverTimeType.Poison);
+         transform.DOKill();
+         Destroy(gameObject);
       }
       else if(other.gameObject.tag == "Ground") {
          Vector3 newPos = gameObject.transform.position;
@@ -23,6 +26,8 @@ public class ProjectileAi : MonoBehaviour
          var decalRot = EnemyBase.SplatterDecalPrefab.transform.rotation;
          EnemyBase.SlimeDecalsInWorld.Add(Instantiate(EnemyBase.SplatterDecalPrefab, decalPos, decalRot));
          EnemyBase.SlimeDecalsInWorldTimeLeft.Add(4f);
+         transform.DOKill();
+         Destroy(gameObject);
       }
    }
 }

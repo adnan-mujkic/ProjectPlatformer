@@ -14,7 +14,7 @@ public class DamageZone : MonoBehaviour
             TickRate = TickDuration,
             TicksLeft = TickDuration,
             HealPerSecond = 0
-         }, gameObject);
+         }, Assets.Scripts.Enums.EDamageOverTimeType.Poison);
       }
    }
 }

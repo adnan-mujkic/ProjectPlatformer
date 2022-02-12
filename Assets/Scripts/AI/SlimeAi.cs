@@ -35,7 +35,7 @@ public class SlimeAi : EnemyBase
          if(!playerInsideAttackRange && !attacking && InsideCamera) {
             SpitProjectile = Instantiate(SpitPrefab, transform.position, Quaternion.identity);
             SpitProjectile.GetComponent<ProjectileAi>().EnemyBase = this;
-            Vector3 playerFeet = new Vector3(player.transform.position.x, player.transform.position.y - 0.4f, player.transform.position.z);
+            Vector3 playerFeet = new Vector3(player.transform.position.x, player.transform.position.y - 0.42f, player.transform.position.z);
             Vector3 centerVector = (transform.position + playerFeet) / 2f;
             SpitProjectile.transform.DOPath(new Vector3[] {
                transform.position,

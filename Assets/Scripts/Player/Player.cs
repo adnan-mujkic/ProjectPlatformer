@@ -5,6 +5,7 @@ using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 using UnityEngine.EventSystems;
 using System.Linq;
+using Assets.Scripts.Enums;
 
 public class Player: MonoBehaviour
 {
@@ -38,7 +39,7 @@ public class Player: MonoBehaviour
 
 
    private Coroutine DamageTickCoroutine = null;
-   private Dictionary<GameObject, DamageModifier> DamageModifierList;
+   private Dictionary<EDamageOverTimeType, DamageModifier> DamageModifierList;
 
    private void Start() {
       HasShield = true;
@@ -59,7 +60,7 @@ public class Player: MonoBehaviour
          }
       }
 
-      DamageModifierList = new Dictionary<GameObject, DamageModifier>();
+      DamageModifierList = new Dictionary<EDamageOverTimeType, DamageModifier>();
    }
 
    // Update is called once per frame
@@ -185,27 +186,28 @@ public class Player: MonoBehaviour
    private IEnumerator TickDamageModifier() {
       while(DamageModifierList.Count > 0) {
          var keys = DamageModifierList.Keys.ToList();
+         var keysToRemove = new List<EDamageOverTimeType>();
          for(int i = 0; i < keys.Count; i++) {
             var key = keys[i];
-            if(key != null) {
                if(DamageModifierList[key].TicksLeft > 0) {
                   DamageModifierList[key].TicksLeft--;
                   TakeDamage(DamageModifierList[key].DamagePerSecond);
                } else {
-                  DamageModifierList.Remove(key);
-                  i--;
+                  keysToRemove.Add(key);
                }
-            } else {
-               DamageModifierList.Remove(key);
-               i--;
-               yield return null;
-            }
+         }
+         foreach(var key in keysToRemove) {
+            DamageModifierList.Remove(key);
          }
          yield return new WaitForSeconds(1f);
       }
    }
-   public void StartDamageTick(DamageModifier modifier, GameObject enemy) {
-      DamageModifierList.Add(enemy, modifier);
+   public void StartDamageTick(DamageModifier modifier, EDamageOverTimeType damageType) {
+      if(DamageModifierList.ContainsKey(damageType))
+         DamageModifierList[damageType] = modifier;
+      else
+         DamageModifierList.Add(damageType, modifier);
+
       if(DamageTickCoroutine == null)
          DamageTickCoroutine = StartCoroutine(TickDamageModifier());
    }
