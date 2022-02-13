@@ -96,33 +96,7 @@ public class Player: MonoBehaviour
          Application.Quit();
    }
 
-   private void OnTriggerEnter2D(Collider2D other) {
-      //if(other.tag == "Enemy") {
-      //   if((Shielding && characterControl.facingRight && other.transform.position.x > transform.position.x) ||
-      //   (Shielding && !characterControl.facingRight && other.transform.position.x < transform.position.x)) {
-      //      if(other.GetComponent<BoneAi>() != null && Laptop.GetComponent<LaptopController>().DamageShield()) {
-      //         if(other.GetComponent<BoneAi>().SkeletonFacingRight)
-      //            other.GetComponent<Rigidbody2D>().velocity = new Vector2(-25, 0);
-      //         else
-      //            other.GetComponent<Rigidbody2D>().velocity = new Vector2(25, 0);
-      //         other.GetComponent<BoneAi>().SkeletonOwner = false;
-      //      } else {
-      //         HP--;
-      //         HpBar.UpdateHp(HP);
-      //         Destroy(other.gameObject);
-      //         if(HP <= 0) {
-      //            Die(false);
-      //         }
-      //      }
-      //   } else {
-      //      HP--;
-      //      HpBar.UpdateHp(HP);
-      //      Destroy(other.gameObject);
-      //      if(HP <= 0) {
-      //         Die(false);
-      //      }
-      //   }
-      //}
+   private void OnTriggerEnter(Collider other) {
       if(other.tag == "DeathZone") {
          Die(true);
       }
@@ -191,7 +165,7 @@ public class Player: MonoBehaviour
             var key = keys[i];
                if(DamageModifierList[key].TicksLeft > 0) {
                   DamageModifierList[key].TicksLeft--;
-                  TakeDamage(DamageModifierList[key].DamagePerSecond);
+                  //TakeDamage(DamageModifierList[key].DamagePerSecond);
                } else {
                   keysToRemove.Add(key);
                }

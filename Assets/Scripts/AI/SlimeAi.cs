@@ -13,10 +13,12 @@ public class SlimeAi : EnemyBase
 
    internal override void Enable() {
       base.Enable();
-      SlimeDecalsInWorld = new List<GameObject>();
-      SlimeDecalsInWorldTimeLeft = new List<float>();
-      StartCoroutine(CheckDecals(0.5f));
-      StartCoroutine(Spit());
+      if(WalkPoints.Length <= 1) {
+         SlimeDecalsInWorld = new List<GameObject>();
+         SlimeDecalsInWorldTimeLeft = new List<float>();
+         StartCoroutine(CheckDecals(0.5f));
+         StartCoroutine(Spit());
+      }
    }
 
    internal override void FUpdate() {

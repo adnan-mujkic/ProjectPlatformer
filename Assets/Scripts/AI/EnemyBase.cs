@@ -5,15 +5,29 @@ using DG.Tweening;
 
 public class EnemyBase: MonoBehaviour
 {
+   [System.NonSerialized]
+   public bool facingRight;
+
+   [System.NonSerialized]
+   public bool InsideCamera;
+
+   [System.NonSerialized]
+   public bool playerInsideAttackRange;
+
+   [System.NonSerialized]
+   public bool attacking;
+
+   [System.NonSerialized]
+   public bool takingDamage;
+
+
    public GameObject EnemyModel;
    public float Speed;
    int HP;
    internal Player player;
-   bool facingRight;
-   public bool InsideCamera;
    public bool enableAI;
-   public bool playerInsideAttackRange;
-   public bool attacking;
+   public Vector3[] WalkPoints;
+   int WalkpointsCounter;
 
 
    private void OnEnable() {
@@ -26,6 +40,10 @@ public class EnemyBase: MonoBehaviour
    internal virtual void Enable() {
       player = FindObjectOfType<Player>();
       StartCoroutine(CheckIfInsideCamera());
+      if(WalkPoints.Length > 0) {
+         WalkpointsCounter = 0;
+         StartCoroutine(WalkAround());
+      }
    }
 
    internal virtual void FUpdate() {
@@ -34,18 +52,16 @@ public class EnemyBase: MonoBehaviour
 
       if(!attacking && playerInsideAttackRange)
          StartBasicAttack();
-
-      float calculatedSpeed = Speed * Time.deltaTime;
-      transform.position += new Vector3(
-         (player.transform.position.x >= transform.position.x ? calculatedSpeed : -calculatedSpeed), 0, 0);
    }
 
    public virtual void TakeDamage(int amount) {
+      takingDamage = true;
       HP--;
       if(HP <= 0) {
          HP = 0;
          Die();
       }
+      takingDamage = false;
    }
    public virtual void Die() {
       Destroy(this.gameObject);
@@ -54,11 +70,11 @@ public class EnemyBase: MonoBehaviour
       EnemyModel.transform.localScale = new Vector3(facingRight ? 1 : -1, 1, 1);
       facingRight = !facingRight;
    }
-   public virtual void StartBasicAttack() {}
+   public virtual void StartBasicAttack() { }
 
    IEnumerator CheckIfInsideCamera() {
       while(true) {
-         if(!attacking) {
+         if(!attacking && WalkPoints.Length <= 1) {
             if(player.transform.position.x > transform.position.x && !facingRight) {
                Flip();
             } else if(player.transform.position.x < transform.position.x && facingRight) {
@@ -74,12 +90,28 @@ public class EnemyBase: MonoBehaviour
          yield return new WaitForSeconds(0.1f);
       }
    }
-
-   private void OnTriggerEnter(Collider other) {
-      if(other.gameObject.tag == "Player") {
-         if(other.gameObject.transform.position.y < gameObject.transform.position.y + 0.1f) {
-            other.gameObject.GetComponent<Player>().TakeDamage(1);
+   IEnumerator WalkAround() {
+      transform.position = WalkPoints[0];
+      WalkpointsCounter++;
+      while(gameObject.activeInHierarchy) {
+         Vector3 nextPosition = WalkPoints[WalkpointsCounter];
+         Vector3 currentPosition = transform.position;
+         if(facingRight && currentPosition.x > nextPosition.x)
+            Flip();
+         else if(!facingRight && currentPosition.x < nextPosition.x)
+            Flip();
+         while(System.Math.Round(transform.position.x, 1) != System.Math.Round(nextPosition.x, 1)) {
+            if(!attacking)
+               transform.position = new Vector3(facingRight? transform.position.x + (Speed * Time.deltaTime) : transform.position.x - (Speed * Time.deltaTime), transform.position.y, transform.position.z);
+            yield return new WaitForFixedUpdate();
          }
+         bool backwards = false;
+         if(WalkpointsCounter == WalkPoints.Length - 1)
+            backwards = true;
+         else if(WalkpointsCounter == 0)
+            backwards = false;
+
+         WalkpointsCounter = backwards ? WalkpointsCounter - 1 : WalkpointsCounter + 1;
       }
    }
 }
