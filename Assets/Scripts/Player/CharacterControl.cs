@@ -25,6 +25,7 @@ public class CharacterControl : MonoBehaviour
    public static bool SprintEnabled;
    public static bool Sprinting;
    public bool jumping;
+   public bool dashing;
 
    Coroutine jumpingCoroutine;
 
@@ -47,7 +48,8 @@ public class CharacterControl : MonoBehaviour
       }
 
       moveInput = Input.GetAxisRaw("Horizontal");
-      rb.velocity = GetMovementVelocity(moveInput * speed * ((SprintEnabled && Sprinting) ? 2f : 1f), rb.velocity.y);
+      if(!dashing)
+         rb.velocity = GetMovementVelocity(moveInput * speed * ((SprintEnabled && Sprinting) ? 2f : 1f), rb.velocity.y);
 
       if (!facingRight && moveInput > 0)
       {
@@ -58,11 +60,11 @@ public class CharacterControl : MonoBehaviour
          Flip();
       }
 
-      if (rb.velocity.y < 0)
+      if (rb.velocity.y < 0 && !dashing)
       {
          rb.velocity += GetGravityVelocity(fallMultiplier, Time.deltaTime);
       }
-      else if (rb.velocity.y > 0 && !Input.GetKey(KeyCode.Space))
+      else if (rb.velocity.y > 0 && !Input.GetKey(KeyCode.Space) && !dashing)
       {
          rb.velocity += GetGravityVelocity(lowJumpMultiplier, Time.deltaTime);
       }
@@ -97,7 +99,8 @@ public class CharacterControl : MonoBehaviour
       //animator.SetBool("Walking", moving);
 
       if(Input.GetKeyDown(KeyCode.LeftShift) && !isGrounded) {
-         rb.AddForce(facingRight ? Vector3.right * 30f : Vector3.left * 30f);
+         dashing = true;
+         StartCoroutine(InitiateDash());
       }
    }
    void Flip() {
@@ -123,5 +126,17 @@ public class CharacterControl : MonoBehaviour
          yield return new WaitForFixedUpdate();
       }
       jumping = false;
+   }
+   IEnumerator InitiateDash() {
+      float seconds = 0.3f;
+      rb.useGravity = false;
+      rb.velocity = Vector3.zero;
+      rb.velocity += (facingRight ? Vector3.right * 20f : Vector3.left * 20f);
+      while(seconds > 0) {
+         seconds -= Time.deltaTime;
+         yield return new WaitForEndOfFrame();
+      }
+      dashing = false;
+      rb.useGravity = true;
    }
 }
