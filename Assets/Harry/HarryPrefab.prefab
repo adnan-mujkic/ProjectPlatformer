@@ -1199,7 +1199,7 @@ MonoBehaviour:
   fallMultiplier: 4
   lowJumpMultiplier: 2.5
   groundCheck: {fileID: 7991089653603914960}
-  checkRadius: 0.5
+  checkRadius: 0.3
   whatIsGround:
     serializedVersion: 2
     m_Bits: 64
