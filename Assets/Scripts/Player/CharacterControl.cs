@@ -95,6 +95,10 @@ public class CharacterControl : MonoBehaviour
          moving = false;
       }
       //animator.SetBool("Walking", moving);
+
+      if(Input.GetKeyDown(KeyCode.LeftShift) && !isGrounded) {
+         rb.AddForce(facingRight ? Vector3.right * 30f : Vector3.left * 30f);
+      }
    }
    void Flip() {
       player.PlayerModel.transform.localScale = new Vector3(facingRight ? -1 : 1, 1, 1);
