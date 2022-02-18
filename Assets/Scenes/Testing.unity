@@ -469,6 +469,10 @@ PrefabInstance:
       propertyPath: m_AnchoredPosition.y
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 7406796420167866655, guid: 31e46dab7af909c40ab59a304a2dd323, type: 3}
+      propertyPath: m_UseGravity
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 7976445566063733453, guid: 31e46dab7af909c40ab59a304a2dd323, type: 3}
       propertyPath: m_AnchorMax.y
       value: 0
@@ -1434,7 +1438,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 341091686}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -24.2, y: 7.69, z: 0}
+  m_LocalPosition: {x: -25, y: 7.69, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 959966547}
@@ -3830,7 +3834,7 @@ GameObject:
   m_TagString: Ground
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
-  m_StaticEditorFlags: 4294967295
+  m_StaticEditorFlags: 0
   m_IsActive: 1
 --- !u!4 &687239300
 Transform:
@@ -3926,6 +3930,7 @@ MonoBehaviour:
   - {x: 147.37, y: 7.52, z: -0.16}
   Speed: 5
   Linger: 2
+  moveTrans: {fileID: 0}
 --- !u!54 &687239305
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -6400,6 +6405,7 @@ MonoBehaviour:
   - {x: 103, y: -4.22, z: 0}
   Speed: 5
   Linger: 0
+  moveTrans: {fileID: 0}
 --- !u!54 &1483877130
 Rigidbody:
   m_ObjectHideFlags: 0
