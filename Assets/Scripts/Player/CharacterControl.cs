@@ -64,7 +64,7 @@ public class CharacterControl : MonoBehaviour
       {
          rb.velocity += GetGravityVelocity(fallMultiplier, Time.deltaTime);
       }
-      else if (rb.velocity.y > 0 && !Input.GetKey(KeyCode.Space) && !dashing)
+      else if (rb.velocity.y > 0 && !jumping && !dashing)
       {
          rb.velocity += GetGravityVelocity(lowJumpMultiplier, Time.deltaTime);
       }

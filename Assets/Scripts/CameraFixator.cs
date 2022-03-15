@@ -1,4 +1,5 @@
 using UnityEngine;
+using DG.Tweening;
 
 public class CameraFixator : MonoBehaviour
 {
@@ -6,6 +7,9 @@ public class CameraFixator : MonoBehaviour
    public float FOV;
    public float AnimationTime;
    public GameObject Collisions;
+   public GameObject CollisionsMesh;
+   public bool animateCollision;
+   public Vector3 collisionEndPos;
    CameraAi mainCamera;
 
    private void OnEnable() {
@@ -15,8 +19,11 @@ public class CameraFixator : MonoBehaviour
 
    private void OnTriggerEnter(Collider other) {
       if(other.gameObject.tag == "Player") {
-         Collisions.SetActive(true);
          mainCamera.gameObject.GetComponent<CameraAi>().SwitchToCinematicCamera(FOV, AnimationTime, CameraPosition.transform);
+         Collisions.SetActive(true);
+         if(animateCollision) {
+            CollisionsMesh.transform.DOLocalMove(collisionEndPos, 1f);
+         }
       }
    }
    private void OnTriggerExit(Collider other) {

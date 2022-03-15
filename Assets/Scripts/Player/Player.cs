@@ -37,14 +37,21 @@ public class Player: MonoBehaviour
    public float ChargePercentage;
    public float HoldingShieldFor;
 
+   //Parry
+   public int ParryCounter;
+   public Text parryText;
+   public GameObject ParryModel;
+   public bool parrying;
 
    private Coroutine DamageTickCoroutine = null;
    private Dictionary<EDamageOverTimeType, DamageModifier> DamageModifierList;
 
    private void Start() {
+      ParryModel.SetActive(false);
+      ParryCounter = 0;
+      parryText.text = ParryCounter.ToString();
       HasShield = true;
       source = FindObjectOfType<AudioSource>();
-      HpBar = FindObjectOfType<HpBarWrapper>();
       characterControl = GetComponent<CharacterControl>();
       if(HP == 0) {
          HP = 10;
@@ -65,32 +72,8 @@ public class Player: MonoBehaviour
 
    // Update is called once per frame
    void Update() {
-      if(SceneManager.GetActiveScene().buildIndex == 0)
-         return;
-      if(Input.GetMouseButton(1) && HasShield) {
-         Shielding = true;
-         //Laptop.GetComponent<Animator>().SetBool("Shielding", true);
-      } else {
-         Shielding = false;
-         //Laptop.GetComponent<Animator>().SetBool("Shielding", false);
-      }
-      if(Input.GetMouseButton(0) && HasShield) {
-         if(HoldingShieldFor <= 1.1f) {
-            HoldingShieldFor += Time.deltaTime;
-            if(HoldingShieldFor > 0.1f) {
-               if(HoldingShieldFor < 1.1f) {
-                  ShieldChargeCanvas.gameObject.SetActive(true);
-                  ShieldChargePercentage.fillAmount = HoldingShieldFor - 0.1f;
-               } else
-                  ShieldChargePercentage.fillAmount = 1f;
-            }
-         }
-      }
-      if(Input.GetMouseButtonUp(0)) {
-         if(HoldingShieldFor >= 1.1f)
-            Laptop.GetComponent<LaptopController>().LaunchSelf(HoldingShieldFor - 0.1f, characterControl.facingRight);
-         HoldingShieldFor = 0;
-         ShieldChargeCanvas.gameObject.SetActive(false);
+      if(Input.GetMouseButtonDown(0)) {
+         Parry();
       }
       if(Input.GetKey(KeyCode.Escape))
          Application.Quit();
@@ -109,7 +92,7 @@ public class Player: MonoBehaviour
          StartCoroutine(WaitAndDisablePhysics());
       } else {
          if(!UpdateLives())
-            SceneManager.LoadScene(2);
+            SceneManager.LoadScene(0);
       }
 
    }
@@ -156,6 +139,28 @@ public class Player: MonoBehaviour
          Die(false);
       }
       HpBar.UpdateHp(HP);
+   }
+   public void AddParry() {
+      ParryCounter++;
+      parryText.text = ParryCounter.ToString();
+   }
+   public void RemoveParry() {
+      ParryCounter--;
+      parryText.text = ParryCounter.ToString();
+   }
+   public void Parry() {
+      if(ParryCounter > 0 && !parrying) {
+         parrying = true;
+         ParryModel.SetActive(true);
+         ParryModel.GetComponent<Animator>().Play("SwordSlashAnimation");
+         StartCoroutine(RestartParry());
+         RemoveParry();
+      }
+   }
+   private IEnumerator RestartParry() {
+      yield return new WaitForSeconds(0.5f);
+      parrying = false;
+      ParryModel.SetActive(false);
    }
    private IEnumerator TickDamageModifier() {
       while(DamageModifierList.Count > 0) {
