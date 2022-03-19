@@ -112,8 +112,6 @@ public class SkeletonAi : MonoBehaviour
       HP--;
       if(HP <= 0) {
          player.AddScore(10 * Level);
-         if(GetComponent<FinalBossAi>() != null)
-            GetComponent<FinalBossAi>().UnlockSprint();
          Destroy(gameObject);
       }
    }

@@ -6,6 +6,7 @@ using UnityEngine.UI;
 public class DialogueManager : MonoBehaviour
 {
    public bool dialogueOpen;
+   public GameObject dialoguePanel;
    public Text DialogueText;
    public DialogueSO DialogueTrigger;
    Player player;
@@ -29,7 +30,7 @@ public class DialogueManager : MonoBehaviour
                if(DialogueTrigger.finalBossDialogue)
                   FindObjectOfType<FinalBossAi>().GetComponent<SkeletonAi>().canThrow = true;
                DialogueTrigger = null;
-               GetComponent<Animator>().SetTrigger("CloseDialogue");
+               dialoguePanel.SetActive(false);
                FindObjectOfType<CharacterControl>().enabled = true;
                dialogueOpen = false;
             }
@@ -56,7 +57,7 @@ public class DialogueManager : MonoBehaviour
       else
       {
          dialogueOpen = true;
-         GetComponent<Animator>().SetTrigger("OpenDialogue");
+         dialoguePanel.SetActive(true);
          StartCoroutine(TypeDialogue());
       }
    }

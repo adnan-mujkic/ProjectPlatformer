@@ -6,14 +6,17 @@ using System;
 
 public class CameraAi: MonoBehaviour
 {
+   public ParticleSystem screenWaveEffect;
    Player player;
    CameraFollowPlayer cfp;
    Camera self;
+   bool playingEffect = false;
 
    private void OnEnable() {
       player = FindObjectOfType<Player>();
       cfp = GetComponent<CameraFollowPlayer>();
       self = Camera.main;
+      screenWaveEffect.gameObject.SetActive(false);
    }
 
    public void SwitchToCinematicCamera(float fov, float time, Transform transform) {
@@ -35,5 +38,19 @@ public class CameraAi: MonoBehaviour
    public void ReleaseCinematicCamera() {
       cfp.enabled = true;
       StartCoroutine(AnimateFov(0.5f, 60));
+   }
+
+   public void PlayEffects() {
+      if(playingEffect)
+         return;
+      StartCoroutine(DisplayEffectsAnimation());
+   }
+   public IEnumerator DisplayEffectsAnimation() {
+      playingEffect = true;
+      screenWaveEffect.gameObject.SetActive(true);
+      screenWaveEffect.Play();
+      yield return new WaitForSeconds(0.3f);
+      screenWaveEffect.gameObject.SetActive(false);
+      playingEffect = false;
    }
 }

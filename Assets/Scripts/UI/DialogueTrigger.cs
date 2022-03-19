@@ -5,7 +5,7 @@ using UnityEngine;
 public class DialogueTrigger : MonoBehaviour
 {
    public DialogueSO DialogueToTrigger;
-   public bool enabled;
+   public bool dialogueEnabled;
    public int index;
 
    private void Awake()
@@ -15,18 +15,18 @@ public class DialogueTrigger : MonoBehaviour
       for (int i = 0; i < Player.DialoguesEnabled.Length; i++)
       {
          if (Player.DialoguesEnabled[i].index == index)
-            enabled = Player.DialoguesEnabled[i].enabled;
+            dialogueEnabled = Player.DialoguesEnabled[i].enabled;
       }
    }
 
    private void OnTriggerEnter2D(Collider2D other)
    {
-      if (other.tag == "Player" && enabled)
+      if (other.tag == "Player" && dialogueEnabled)
       {
          FindObjectOfType<DialogueManager>().TriggerDialogue(DialogueToTrigger);
          FindObjectOfType<Player>().GetComponent<Rigidbody2D>().velocity = Vector2.zero;
          FindObjectOfType<CharacterControl>().enabled = false;
-         enabled = false;
+         dialogueEnabled = false;
          for (int i = 0; i < Player.DialoguesEnabled.Length; i++)
          {
             if (Player.DialoguesEnabled[i].index == index)

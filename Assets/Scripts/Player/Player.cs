@@ -6,6 +6,8 @@ using UnityEngine.UI;
 using UnityEngine.EventSystems;
 using System.Linq;
 using Assets.Scripts.Enums;
+using UnityEngine.Rendering.Universal;
+using DG.Tweening;
 
 public class Player: MonoBehaviour
 {
@@ -16,8 +18,10 @@ public class Player: MonoBehaviour
    public GameObject SucessScreen;
    public bool Shielding;
    CharacterControl characterControl;
+   CameraAi cameraAi;
    public GameObject Laptop;
    public GameObject PlayerModel;
+   public Transform PlayerSpawn;
 
    public static int Score;
    public static int Keys;
@@ -30,6 +34,7 @@ public class Player: MonoBehaviour
    private AudioSource source;
    public bool HasShield;
 
+   public GameObject LoadScreen;
    [SerializeField]
    private Canvas ShieldChargeCanvas;
    [SerializeField]
@@ -42,13 +47,18 @@ public class Player: MonoBehaviour
    public Text parryText;
    public GameObject ParryModel;
    public bool parrying;
+   public FinalBossAi FinalBoss;
 
    private Coroutine DamageTickCoroutine = null;
+   private bool DamageShowCoroutine = false;
    private Dictionary<EDamageOverTimeType, DamageModifier> DamageModifierList;
+
+
+   private bool Invincible;
 
    private void Start() {
       ParryModel.SetActive(false);
-      ParryCounter = 0;
+      ParryCounter = 3;
       parryText.text = ParryCounter.ToString();
       HasShield = true;
       source = FindObjectOfType<AudioSource>();
@@ -66,8 +76,9 @@ public class Player: MonoBehaviour
             DialoguesEnabled[i].enabled = true;
          }
       }
-
+      FinalBoss = GameObject.FindObjectOfType<FinalBossAi>();
       DamageModifierList = new Dictionary<EDamageOverTimeType, DamageModifier>();
+      cameraAi = Camera.main.GetComponent<CameraAi>();
    }
 
    // Update is called once per frame
@@ -133,12 +144,40 @@ public class Player: MonoBehaviour
       source.volume = vol;
    }
    public void TakeDamage(int amount) {
-      HP-=amount;
+      if(Invincible)
+         return;
+
+      HP -= amount;
       if(HP <= 0) {
          HP = 0;
          Die(false);
       }
       HpBar.UpdateHp(HP);
+      if(!DamageShowCoroutine)
+         StartCoroutine(ShowDamageIndication());
+      cameraAi.transform.DOShakePosition(0.2f, 0.2f, 100);
+   }
+   public void MakeInvincible(int seconds) {
+      if(!Invincible)
+         StartCoroutine(CountDownInvincible(seconds));
+   }
+   private IEnumerator CountDownInvincible(int seconds) {
+      Invincible = true;
+      yield return new WaitForSeconds(seconds);
+      Invincible = false;
+   }
+   private IEnumerator LoadReturn(int offset) {
+      yield return new WaitForSeconds(offset);
+      LoadScreen.SetActive(true);
+      MakeInvincible(1);
+      GetComponent<CharacterControl>().enabled = false;
+      transform.position = PlayerSpawn.position;
+      yield return new WaitForSeconds(1);
+      GetComponent<CharacterControl>().enabled = true;
+      LoadScreen.SetActive(false);
+   }
+   public void ReturnToSpawn(int offset = 0) {
+      StartCoroutine(LoadReturn(offset));
    }
    public void AddParry() {
       ParryCounter++;
@@ -155,6 +194,11 @@ public class Player: MonoBehaviour
          ParryModel.GetComponent<Animator>().Play("SwordSlashAnimation");
          StartCoroutine(RestartParry());
          RemoveParry();
+         if(Vector3.Distance(FinalBoss.gameObject.transform.position, gameObject.transform.position) < 2f && FinalBoss.vunerable) {
+            FinalBoss.TakeDamage(1);
+            FinalBoss.playerParry = true;
+            cameraAi.PlayEffects();
+         }
       }
    }
    private IEnumerator RestartParry() {
@@ -162,18 +206,27 @@ public class Player: MonoBehaviour
       parrying = false;
       ParryModel.SetActive(false);
    }
+
+   private IEnumerator ShowDamageIndication() {
+      DamageShowCoroutine = true;
+      PlayerModel.GetComponent<MeshRenderer>().material.color = new Color(255f / 255f, 100f / 255f, 100f / 255f);
+      yield return new WaitForSeconds(0.2f);
+      PlayerModel.GetComponent<MeshRenderer>().material.color = new Color(255f / 255f, 255f / 255f, 255f / 255f);
+      DamageShowCoroutine = false;
+   }
+
    private IEnumerator TickDamageModifier() {
       while(DamageModifierList.Count > 0) {
          var keys = DamageModifierList.Keys.ToList();
          var keysToRemove = new List<EDamageOverTimeType>();
          for(int i = 0; i < keys.Count; i++) {
             var key = keys[i];
-               if(DamageModifierList[key].TicksLeft > 0) {
-                  DamageModifierList[key].TicksLeft--;
-                  //TakeDamage(DamageModifierList[key].DamagePerSecond);
-               } else {
-                  keysToRemove.Add(key);
-               }
+            if(DamageModifierList[key].TicksLeft > 0) {
+               DamageModifierList[key].TicksLeft--;
+               //TakeDamage(DamageModifierList[key].DamagePerSecond);
+            } else {
+               keysToRemove.Add(key);
+            }
          }
          foreach(var key in keysToRemove) {
             DamageModifierList.Remove(key);
@@ -192,8 +245,8 @@ public class Player: MonoBehaviour
    }
 }
 
-   public struct DialogueMap
-   {
-      public int index;
-      public bool enabled;
-   }
+public struct DialogueMap
+{
+   public int index;
+   public bool enabled;
+}
