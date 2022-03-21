@@ -40,6 +40,7 @@ public class CharacterControl : MonoBehaviour
       SprintEnabled = true;
       defaultPlayerScale = player.PlayerModel.transform.localScale;
    }
+
    // Update is called once per frame
    void FixedUpdate() {
       isGrounded = Physics.OverlapSphere(groundCheck.position, checkRadius, whatIsGround).Length > 0;
@@ -48,6 +49,8 @@ public class CharacterControl : MonoBehaviour
          jumps = maxJumps;
       }
       animator.SetBool("IsGrounded",isGrounded);
+      if(isGrounded)
+         animator.SetBool("Floating", false);
 
       moveInput = Input.GetAxisRaw("Horizontal");
       if(!dashing)
@@ -65,6 +68,7 @@ public class CharacterControl : MonoBehaviour
       if (rb.velocity.y < 0 && !dashing)
       {
          rb.velocity += GetGravityVelocity(fallMultiplier, Time.deltaTime);
+         animator.SetBool("Floating", true);
       }
       else if (rb.velocity.y > 0 && !jumping && !dashing)
       {
@@ -120,6 +124,7 @@ public class CharacterControl : MonoBehaviour
       jumping = false;
    }
    IEnumerator InitiateDash() {
+      animator.SetBool("Dashing", true);
       float seconds = 0.3f;
       rb.useGravity = false;
       rb.velocity = Vector3.zero;
@@ -130,5 +135,6 @@ public class CharacterControl : MonoBehaviour
       }
       dashing = false;
       rb.useGravity = true;
+      animator.SetBool("Dashing", false);
    }
 }
