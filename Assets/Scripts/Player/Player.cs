@@ -16,10 +16,9 @@ public class Player: MonoBehaviour
    public static int HP;
    public HpBarWrapper HpBar;
    public GameObject SucessScreen;
-   public bool Shielding;
    CharacterControl characterControl;
    CameraAi cameraAi;
-   public GameObject Laptop;
+   Animator animator;
    public GameObject PlayerModel;
    public Transform PlayerSpawn;
 
@@ -32,7 +31,6 @@ public class Player: MonoBehaviour
 
    public float Volume;
    private AudioSource source;
-   public bool HasShield;
 
    public GameObject LoadScreen;
    [SerializeField]
@@ -45,7 +43,6 @@ public class Player: MonoBehaviour
    //Parry
    public int ParryCounter;
    public Text parryText;
-   public GameObject ParryModel;
    public bool parrying;
    public FinalBossAi FinalBoss;
 
@@ -57,10 +54,8 @@ public class Player: MonoBehaviour
    private bool Invincible;
 
    private void Start() {
-      ParryModel.SetActive(false);
       ParryCounter = 3;
       parryText.text = ParryCounter.ToString();
-      HasShield = true;
       source = FindObjectOfType<AudioSource>();
       characterControl = GetComponent<CharacterControl>();
       if(HP == 0) {
@@ -79,6 +74,7 @@ public class Player: MonoBehaviour
       FinalBoss = GameObject.FindObjectOfType<FinalBossAi>();
       DamageModifierList = new Dictionary<EDamageOverTimeType, DamageModifier>();
       cameraAi = Camera.main.GetComponent<CameraAi>();
+      animator = GetComponent<Animator>();
    }
 
    // Update is called once per frame
@@ -156,6 +152,7 @@ public class Player: MonoBehaviour
       if(!DamageShowCoroutine)
          StartCoroutine(ShowDamageIndication());
       cameraAi.transform.DOShakePosition(0.2f, 0.2f, 100);
+      animator.SetTrigger("Hit");
    }
    public void MakeInvincible(int seconds) {
       if(!Invincible)
@@ -190,8 +187,7 @@ public class Player: MonoBehaviour
    public void Parry() {
       if(ParryCounter > 0 && !parrying) {
          parrying = true;
-         ParryModel.SetActive(true);
-         ParryModel.GetComponent<Animator>().Play("SwordSlashAnimation");
+         animator.SetTrigger("Attacking");
          StartCoroutine(RestartParry());
          RemoveParry();
          if(Vector3.Distance(FinalBoss.gameObject.transform.position, gameObject.transform.position) < 2f && FinalBoss.vunerable) {
@@ -202,9 +198,9 @@ public class Player: MonoBehaviour
       }
    }
    private IEnumerator RestartParry() {
-      yield return new WaitForSeconds(0.5f);
+      yield return new WaitForSeconds(1f);
       parrying = false;
-      ParryModel.SetActive(false);
+      animator.ResetTrigger("Attacking");
    }
 
    private IEnumerator ShowDamageIndication() {
@@ -213,6 +209,8 @@ public class Player: MonoBehaviour
       yield return new WaitForSeconds(0.2f);
       PlayerModel.GetComponent<MeshRenderer>().material.color = new Color(255f / 255f, 255f / 255f, 255f / 255f);
       DamageShowCoroutine = false;
+      yield return new WaitForSeconds(0.2f);
+      animator.ResetTrigger("Hit");
    }
 
    private IEnumerator TickDamageModifier() {

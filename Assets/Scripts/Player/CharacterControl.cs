@@ -11,6 +11,7 @@ public class CharacterControl : MonoBehaviour
    public Transform groundCheck;
    public float checkRadius;
    public LayerMask whatIsGround;
+   Vector3 defaultPlayerScale;
    Animator animator;
    Rigidbody rb;
    SpriteRenderer spriteRenderer;
@@ -37,7 +38,7 @@ public class CharacterControl : MonoBehaviour
       facingRight = true;
       player = FindObjectOfType<Player>();
       SprintEnabled = true;
-      //maxJumps = 2;
+      defaultPlayerScale = player.PlayerModel.transform.localScale;
    }
    // Update is called once per frame
    void FixedUpdate() {
@@ -46,6 +47,7 @@ public class CharacterControl : MonoBehaviour
       {
          jumps = maxJumps;
       }
+      animator.SetBool("IsGrounded",isGrounded);
 
       moveInput = Input.GetAxisRaw("Horizontal");
       if(!dashing)
@@ -67,6 +69,7 @@ public class CharacterControl : MonoBehaviour
       else if (rb.velocity.y > 0 && !jumping && !dashing)
       {
          rb.velocity += GetGravityVelocity(lowJumpMultiplier, Time.deltaTime);
+         animator.Play("Warrior_JumpStart");
       }
    }
    void Update() {
@@ -78,25 +81,11 @@ public class CharacterControl : MonoBehaviour
          if (jumpingCoroutine != null)
             StopCoroutine(jumpingCoroutine);
          StartCoroutine(RestartJumping());
+         animator.SetTrigger("JumpUp");
       }
-      //if (rb.velocity.y != 0)
-      //{
-      //   animator.SetBool("Jumping", true);
-      //}
-      //else
-      //{
-      //   animator.SetBool("Jumping", false);
-      //}
       Sprinting = Input.GetKey(KeyCode.LeftShift);
-      if (rb.velocity.x != 0)
-      {
-         moving = true;
-      }
-      else
-      {
-         moving = false;
-      }
-      //animator.SetBool("Walking", moving);
+      moving = (rb.velocity.x != 0);
+      animator.SetBool("Moving", moving);
 
       if(Input.GetKeyDown(KeyCode.LeftShift) && !isGrounded) {
          dashing = true;
@@ -104,7 +93,10 @@ public class CharacterControl : MonoBehaviour
       }
    }
    void Flip() {
-      player.PlayerModel.transform.localScale = new Vector3(facingRight ? -1 : 1, 1, 1);
+      player.PlayerModel.transform.localScale = new Vector3(
+         facingRight ? -1 * defaultPlayerScale.x : 1 * defaultPlayerScale.x,
+         defaultPlayerScale.y,
+         1);
       facingRight = !facingRight;
    }
 

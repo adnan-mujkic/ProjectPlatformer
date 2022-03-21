@@ -93,12 +93,6 @@ public class SkeletonAi : MonoBehaviour
          InflictDamge();
          Destroy(other.gameObject);
       }
-      if(other.tag == "Shield" && !player.HasShield && !invincibleForShield) {
-         other.GetComponent<LaptopController>().ReturnEarly();
-         InflictDamge();
-         invincibleForShield = true;
-         StartCoroutine(RestartInvincibility());
-      }
    }
 
    private IEnumerator RestartInvincibility() {
