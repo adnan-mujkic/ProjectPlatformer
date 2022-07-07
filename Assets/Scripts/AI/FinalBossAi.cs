@@ -18,11 +18,22 @@ public class FinalBossAi: MonoBehaviour
    public Transform[] spawnLocations;
    private int spawnIndex = 0;
 
+   List<CameraFixator> BossArenas;
+
    private void OnEnable() {
       player = FindObjectOfType<Player>();
       animator = skeleModel.gameObject.GetComponent<Animator>();
       SetHP(3);
       hpCanvas.gameObject.SetActive(false);
+
+      var cameraFixators = GameObject.FindObjectsOfType<CameraFixator>();
+      BossArenas = new List<CameraFixator>();
+      foreach(var cam in cameraFixators) {
+         if(cam.TriggersBoss)
+            BossArenas.Add(cam);
+      }
+
+      ModifyBossZones();
    }
 
    private void Update() {
@@ -72,6 +83,7 @@ public class FinalBossAi: MonoBehaviour
       vunerable = false;
       StopAllCoroutines();
       skeleModel.GetComponent<MeshRenderer>().material.color = new Color(255f / 255f, 255f / 255f, 255f / 255f);
+      ModifyBossZones();
    }
 
    private IEnumerator MoveToNextLocation() {
@@ -79,6 +91,7 @@ public class FinalBossAi: MonoBehaviour
       spawnIndex++;
       Vector3 nextSpawn = spawnLocations[spawnIndex].position;
       gameObject.transform.DOMove(nextSpawn, 2f);
+      ModifyBossZones();
       player.ReturnToSpawn();
    }
 
@@ -129,5 +142,11 @@ public class FinalBossAi: MonoBehaviour
       P += tt * P2;
 
       return P;
+   }
+
+   private void ModifyBossZones() {
+      foreach(var bossZone in BossArenas) {
+         bossZone.ToggleCollision(bossZone.BossArenaIndex == spawnIndex);
+      }
    }
 }

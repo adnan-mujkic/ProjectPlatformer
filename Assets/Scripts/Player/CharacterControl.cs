@@ -49,8 +49,6 @@ public class CharacterControl : MonoBehaviour
          jumps = maxJumps;
       }
       animator.SetBool("IsGrounded",isGrounded);
-      if(isGrounded)
-         animator.SetBool("Floating", false);
 
       moveInput = Input.GetAxisRaw("Horizontal");
       if(!dashing)
@@ -75,6 +73,9 @@ public class CharacterControl : MonoBehaviour
          rb.velocity += GetGravityVelocity(lowJumpMultiplier, Time.deltaTime);
          animator.Play("Warrior_JumpStart");
       }
+
+      if(isGrounded)
+         animator.SetBool("Floating", false);
    }
    void Update() {
       if (Input.GetKeyDown(KeyCode.Space) && jumps > 0)

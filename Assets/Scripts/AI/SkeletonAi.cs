@@ -20,6 +20,7 @@ public class SkeletonAi : MonoBehaviour
    Player player;
    bool facingRight;
    bool invincibleForShield;
+   CameraFixator[] BossSpawns;
 
    private void OnEnable()
    {

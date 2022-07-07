@@ -33,25 +33,25 @@ public class Player: MonoBehaviour
    private AudioSource source;
 
    public GameObject LoadScreen;
-   [SerializeField]
-   private Canvas ShieldChargeCanvas;
-   [SerializeField]
-   private Image ShieldChargePercentage;
-   public float ChargePercentage;
-   public float HoldingShieldFor;
+   public GameObject MainMenuUI;
+   public GameObject DieScreen;
+   public GameObject WinScreen;
 
    //Parry
    public int ParryCounter;
    public Text parryText;
+   public Image parryImage;
    public bool parrying;
+   public float freeParryStatus;
    public FinalBossAi FinalBoss;
 
    private Coroutine DamageTickCoroutine = null;
    private bool DamageShowCoroutine = false;
    private Dictionary<EDamageOverTimeType, DamageModifier> DamageModifierList;
 
-
+   private bool startMenu = true;
    private bool Invincible;
+   private bool Dead = false;
 
    private void Start() {
       ParryCounter = 3;
@@ -75,15 +75,36 @@ public class Player: MonoBehaviour
       DamageModifierList = new Dictionary<EDamageOverTimeType, DamageModifier>();
       cameraAi = Camera.main.GetComponent<CameraAi>();
       animator = GetComponent<Animator>();
+      MainMenuUI.SetActive(true);
+      DieScreen.SetActive(false);
+      startMenu = true;
+      GetComponent<CharacterControl>().enabled = false;
    }
 
    // Update is called once per frame
    void Update() {
-      if(Input.GetMouseButtonDown(0)) {
+      if(Input.GetKeyDown(KeyCode.Return) || Input.GetMouseButtonDown(0)) {
          Parry();
+         
       }
-      if(Input.GetKey(KeyCode.Escape))
+      if(Input.GetKeyDown(KeyCode.Space) && startMenu) {
+         startMenu = false;
+         MainMenuUI.SetActive(false);
+         GetComponent<CharacterControl>().enabled = true;
+         return;
+      }
+      if(Input.GetKeyDown(KeyCode.Space) && Dead) {
+         SceneManager.LoadScene(0);
+      }
+
+      if(Input.GetKey(KeyCode.Escape)) {
          Application.Quit();
+      }
+
+      if(freeParryStatus <= 1) {
+         freeParryStatus += Time.deltaTime / 10f;
+         parryImage.fillAmount = freeParryStatus;
+      }
    }
 
    private void OnTriggerEnter(Collider other) {
@@ -98,10 +119,11 @@ public class Player: MonoBehaviour
       if(falling) {
          StartCoroutine(WaitAndDisablePhysics());
       } else {
-         if(!UpdateLives())
-            SceneManager.LoadScene(0);
+         if(!UpdateLives()) {
+            DieScreen.SetActive(true);
+            Dead = true;
+         }
       }
-
    }
    IEnumerator WaitAndDisablePhysics() {
       yield return new WaitForSeconds(0.5f);
@@ -168,10 +190,17 @@ public class Player: MonoBehaviour
       LoadScreen.SetActive(true);
       MakeInvincible(1);
       GetComponent<CharacterControl>().enabled = false;
+      GetComponent<Rigidbody>().velocity = Vector3.zero;
       transform.position = PlayerSpawn.position;
       yield return new WaitForSeconds(1);
       GetComponent<CharacterControl>().enabled = true;
       LoadScreen.SetActive(false);
+
+      var finalBoss = GameObject.FindObjectOfType<FinalBossAi>();
+      if(finalBoss == null) {
+         SucessScreen.SetActive(true);
+         GetComponent<CharacterControl>().enabled = false;
+      }
    }
    public void ReturnToSpawn(int offset = 0) {
       StartCoroutine(LoadReturn(offset));
@@ -185,11 +214,17 @@ public class Player: MonoBehaviour
       parryText.text = ParryCounter.ToString();
    }
    public void Parry() {
-      if(ParryCounter > 0 && !parrying) {
+      if(!parrying) {
+         if(freeParryStatus >= 0.99f) {
+            freeParryStatus = 0;
+         } else if(ParryCounter > 0) {
+            RemoveParry();
+         } else {
+            return;
+         }
          parrying = true;
          animator.SetTrigger("Attacking");
          StartCoroutine(RestartParry());
-         RemoveParry();
          if(Vector3.Distance(FinalBoss.gameObject.transform.position, gameObject.transform.position) < 2f && FinalBoss.vunerable) {
             FinalBoss.TakeDamage(1);
             FinalBoss.playerParry = true;

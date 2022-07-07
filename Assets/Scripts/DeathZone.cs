@@ -7,7 +7,7 @@ public class DeathZone : MonoBehaviour
    private Vector3 spawnPointPos;
 
    private void OnEnable() {
-      spawnPointPos = GameObject.FindGameObjectWithTag("SpawnPoint").transform.position;
+      spawnPointPos = GameObject.FindObjectOfType<Player>().PlayerSpawn.transform.position;
    }
 
    private void OnTriggerEnter(Collider other) {
