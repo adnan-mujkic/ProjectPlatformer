@@ -63,7 +63,7 @@ public class CharacterControl : MonoBehaviour
          Flip();
       }
 
-      if (rb.velocity.y < 0 && !dashing)
+      if (rb.velocity.y <= 0 && !dashing)
       {
          rb.velocity += GetGravityVelocity(fallMultiplier, Time.deltaTime);
          animator.SetBool("Floating", true);
@@ -71,11 +71,13 @@ public class CharacterControl : MonoBehaviour
       else if (rb.velocity.y > 0 && !jumping && !dashing)
       {
          rb.velocity += GetGravityVelocity(lowJumpMultiplier, Time.deltaTime);
-         animator.Play("Warrior_JumpStart");
       }
 
       if(isGrounded)
          animator.SetBool("Floating", false);
+
+      if(!Input.GetKey(KeyCode.D) && !Input.GetKey(KeyCode.A))
+         rb.velocity = new Vector3(0, rb.velocity.y, rb.velocity.z);
    }
    void Update() {
       if (Input.GetKeyDown(KeyCode.Space) && jumps > 0)
@@ -89,7 +91,7 @@ public class CharacterControl : MonoBehaviour
          animator.SetTrigger("JumpUp");
       }
       Sprinting = Input.GetKey(KeyCode.LeftShift);
-      moving = (rb.velocity.x != 0);
+      moving = (Input.GetKey(KeyCode.D) || Input.GetKey(KeyCode.A));
       animator.SetBool("Moving", moving);
 
       if(Input.GetKeyDown(KeyCode.LeftShift) && !isGrounded) {

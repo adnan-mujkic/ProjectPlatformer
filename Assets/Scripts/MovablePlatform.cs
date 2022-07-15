@@ -9,8 +9,10 @@ public class MovablePlatform : MonoBehaviour
    public float Speed;
    public float Linger;
    int movePointsCounter;
+   Player player;
 
    private void OnEnable() {
+      player = GameObject.FindObjectOfType<Player>();
       transform.position = MovePoints[0];
       movePointsCounter = 1;
       StartCoroutine(MovePlatform());
@@ -39,6 +41,18 @@ public class MovablePlatform : MonoBehaviour
 
          movePointsCounter = backwards ? movePointsCounter - 1 : movePointsCounter + 1;
          yield return new WaitForSeconds(Linger);
+      }
+   }
+
+   private void OnTriggerEnter(Collider other) {
+      if(other.tag == "Player") {
+         player.transform.parent = transform;
+      }
+   }
+
+   private void OnTriggerExit(Collider other) {
+      if(other.tag == "Player") {
+         player.transform.parent = null;
       }
    }
 }

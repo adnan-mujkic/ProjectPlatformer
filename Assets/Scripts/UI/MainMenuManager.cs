@@ -25,7 +25,6 @@ public class MainMenuManager: MonoBehaviour
       Player.Lives = 3;
       Player.Score = 0;
       Player.Keys = 0;
-      Player.DialoguesEnabled = null;
       CharacterControl.SprintEnabled = false;
       SceneManager.LoadScene(2);
    }

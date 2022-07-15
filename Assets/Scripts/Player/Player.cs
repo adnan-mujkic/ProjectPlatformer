@@ -27,10 +27,7 @@ public class Player: MonoBehaviour
    public Text ScoreText;
    public GameObject GameOverScreen;
    public Button ReplayButton;
-   public static DialogueMap[] DialoguesEnabled;
 
-   public float Volume;
-   private AudioSource source;
 
    public GameObject LoadScreen;
    public GameObject MainMenuUI;
@@ -53,23 +50,16 @@ public class Player: MonoBehaviour
    private bool Invincible;
    private bool Dead = false;
 
+   private AudioManager am;
+
    private void Start() {
       ParryCounter = 3;
       parryText.text = ParryCounter.ToString();
-      source = FindObjectOfType<AudioSource>();
       characterControl = GetComponent<CharacterControl>();
       if(HP == 0) {
          HP = 10;
          if(HpBar != null)
             HpBar.UpdateHp(HP);
-      }
-      if(DialoguesEnabled == null) {
-         var allDialogues = FindObjectsOfType<DialogueTrigger>();
-         DialoguesEnabled = new DialogueMap[allDialogues.Length];
-         for(int i = 0; i < allDialogues.Length; i++) {
-            DialoguesEnabled[i].index = allDialogues[i].index;
-            DialoguesEnabled[i].enabled = true;
-         }
       }
       FinalBoss = GameObject.FindObjectOfType<FinalBossAi>();
       DamageModifierList = new Dictionary<EDamageOverTimeType, DamageModifier>();
@@ -79,18 +69,20 @@ public class Player: MonoBehaviour
       DieScreen.SetActive(false);
       startMenu = true;
       GetComponent<CharacterControl>().enabled = false;
+      am = cameraAi.GetComponent<AudioManager>();
    }
 
    // Update is called once per frame
    void Update() {
       if(Input.GetKeyDown(KeyCode.Return) || Input.GetMouseButtonDown(0)) {
          Parry();
-         
+
       }
       if(Input.GetKeyDown(KeyCode.Space) && startMenu) {
          startMenu = false;
          MainMenuUI.SetActive(false);
          GetComponent<CharacterControl>().enabled = true;
+         am.PlayMusic(am.MusicToPlay, true, true, am.TopMusicVolume);
          return;
       }
       if(Input.GetKeyDown(KeyCode.Space) && Dead) {
@@ -116,12 +108,14 @@ public class Player: MonoBehaviour
    public void Die(bool falling) {
       GetComponent<CharacterControl>().enabled = false;
       Camera.main.GetComponent<CameraFollowPlayer>().enabled = false;
+      animator.SetTrigger("Die");
       if(falling) {
          StartCoroutine(WaitAndDisablePhysics());
       } else {
          if(!UpdateLives()) {
             DieScreen.SetActive(true);
             Dead = true;
+            FindObjectOfType<FinalBossAi>().DeactivateAi();
          }
       }
    }
@@ -157,10 +151,6 @@ public class Player: MonoBehaviour
          GetComponent<Rigidbody2D>().simulated = false;
       }
    }
-   public void SwitchVolume(float vol) {
-      Volume = vol;
-      source.volume = vol;
-   }
    public void TakeDamage(int amount) {
       if(Invincible)
          return;
@@ -173,9 +163,16 @@ public class Player: MonoBehaviour
       HpBar.UpdateHp(HP);
       if(!DamageShowCoroutine)
          StartCoroutine(ShowDamageIndication());
-      cameraAi.transform.DOShakePosition(0.2f, 0.2f, 100);
+      StartCoroutine(cameraAi.ShakeCam(0.15f, 0.1f));
       animator.SetTrigger("Hit");
    }
+   public void AddHp(int amount) {
+      HP += amount;
+      if(HP > 10)
+         HP = 10;
+      HpBar.UpdateHp(HP);
+   }
+
    public void MakeInvincible(int seconds) {
       if(!Invincible)
          StartCoroutine(CountDownInvincible(seconds));
@@ -229,6 +226,9 @@ public class Player: MonoBehaviour
             FinalBoss.TakeDamage(1);
             FinalBoss.playerParry = true;
             cameraAi.PlayEffects();
+            am.PlaySfx(am.HitSfx);
+         } else {
+            am.PlaySfx(am.SwooshSfx);
          }
       }
    }
@@ -276,10 +276,4 @@ public class Player: MonoBehaviour
       if(DamageTickCoroutine == null)
          DamageTickCoroutine = StartCoroutine(TickDamageModifier());
    }
-}
-
-public struct DialogueMap
-{
-   public int index;
-   public bool enabled;
 }

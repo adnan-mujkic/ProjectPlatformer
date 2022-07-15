@@ -42,6 +42,8 @@ public class CameraFixator : MonoBehaviour
          mainCamera.gameObject.GetComponent<CameraFollowPlayer>().SmoothSpeed = defaultCameraSpeedOffset + CameraFollowSpeedOffset;
          ToggleCollision(false);
          if(TriggersBoss) {
+            var am = mainCamera.GetComponent<AudioManager>();
+            am.PlayMusic(am.BossMusic, true, true, am.TopMusicVolume);
             StartCoroutine(StartBossTrigger());
          }
          activationCount++;

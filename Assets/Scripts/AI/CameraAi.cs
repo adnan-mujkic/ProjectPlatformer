@@ -53,4 +53,16 @@ public class CameraAi: MonoBehaviour
       screenWaveEffect.gameObject.SetActive(false);
       playingEffect = false;
    }
+
+   public IEnumerator ShakeCam(float duration, float strength) {
+      float elapsed = 0f;
+      while(elapsed < duration) {
+         yield return new WaitForEndOfFrame();
+         float randX = UnityEngine.Random.Range(-1.0f, 1.0f) * strength;
+         float randY = UnityEngine.Random.Range(-1.0f, 1.0f) * strength;
+
+         transform.position = new Vector3(transform.position.x + randX, transform.position.y + randY, transform.position.z);
+         elapsed += Time.deltaTime;
+      }
+   }
 }
